@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SEAT HUB - Hệ Thống Quản Lý Chỗ Ngồi Thư Viện</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            surface: {
+              950: '#07090E',
+              900: '#0D111A',
+              850: '#131826',
+              800: '#1A2133',
+              700: '#252F47',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .mesh-gradient {
+      background: radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+    }
+  </style>
+</head>
+<body class="bg-[#05070B] text-slate-100 min-h-screen flex justify-center items-center p-0 sm:p-5 font-sans antialiased selection:bg-amber-500/20">
+
+  <!-- ================= MÀN HÌNH XÁC THỰC ================= -->
+  <div id="authScreen" class="w-full max-w-md bg-surface-900/90 backdrop-blur-2xl min-h-screen sm:min-h-[844px] sm:h-[844px] sm:rounded-[40px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] flex flex-col justify-center px-7 py-8 border border-white/10 z-50 overflow-y-auto custom-scroll relative mesh-gradient">
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="text-center space-y-2 mb-7 relative z-10">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 flex items-center justify-center text-slate-950 font-black shadow-[0_10px_25px_-5px_rgba(245,158,11,0.4)] mx-auto text-3xl">
+        <i class="ph-bold ph-armchair"></i>
+      </div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight">SEAT HUB</h1>
+      <p class="text-xs text-slate-400 font-medium">Hệ thống giữ chỗ & quản lý không gian thông minh</p>
+    </div>
+
+    <!-- Chọn vai trò -->
+    <div class="space-y-4 relative z-10">
+      <div id="roleSelector" class="grid grid-cols-2 gap-1.5 bg-surface-950/80 p-1.5 rounded-2xl border border-white/5 text-xs shadow-inner">
+        <button onclick="switchLoginRole('student')" id="btnTabStudent" class="py-2.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20">
+          <i class="ph-bold ph-student text-sm"></i> Sinh viên
+        </button>
+        <button onclick="switchLoginRole('admin')" id="btnTabAdmin" class="py-2.5 rounded-xl font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
+          <i class="ph-bold ph-shield-check text-sm"></i> Quản trị viên
+        </button>
+      </div>
+
+      <!-- ĐĂNG NHẬP -->
+      <div id="loginFormContainer" class="space-y-3.5 bg-surface-850/60 border border-white/10 p-5 rounded-3xl shadow-xl backdrop-blur-md">
+        <div class="flex items-center justify-between pb-1">
+          <span id="formLoginHeading" class="text-xs font-bold text-slate-300 uppercase tracking-wider">Đăng nhập sinh viên</span>
+          <button onclick="toggleAuthMode('register')" id="btnGoToRegister" class="text-[11px] text-amber-400 hover:text-amber-300 font-semibold transition-colors flex items-center gap-1">
+            Đăng ký mới <i class="ph-bold ph-arrow-right"></i>
+          </button>
+        </div>
+
+        <div class="space-y-1.5">
+          <label id="lblUsername" class="block text-xs font-semibold text-slate-300">Mã số sinh viên (MSSV)</label>
+          <div class="relative">
+            <i class="ph-bold ph-identification-card absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+            <input id="inputUsername" type="text" value="2356100043" class="w-full bg-surface-950/70 border border-white/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono transition-all">
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-slate-300">Mật khẩu</label>
+          <div class="relative">
+            <i class="ph-bold ph-lock-key absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+            <input id="inputPassword" type="password" value="123456" class="w-full bg-surface-950/70 border border-white/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-all">
+          </div>
+        </div>
+        
+        <p id="authErrorMsg" class="text-[11px] text-rose-400 hidden flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 p-2 rounded-xl">
+          <i class="ph-fill ph-warning-circle text-sm"></i> Tài khoản hoặc mật khẩu không chính xác!
+        </p>
+
+        <button onclick="handleLoginSubmit()" class="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-105 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-[0.98] transition-all">
+          <i class="ph-bold ph-sign-in text-base"></i> Đăng Nhập
+        </button>
+      </div>
+
+      <!-- ĐĂNG KÝ -->
+      <div id="registerFormContainer" class="hidden space-y-3 bg-surface-850/60 border border-white/10 p-5 rounded-3xl shadow-xl backdrop-blur-md">
+        <div class="flex items-center justify-between pb-1">
+          <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="ph-bold ph-user-plus text-sm"></i> Đăng ký tài khoản
+          </span>
+          <button onclick="toggleAuthMode('login')" class="text-[11px] text-slate-400 hover:text-slate-200 transition-colors">
+            Quay lại <strong class="text-amber-400 font-semibold">Đăng nhập</strong>
+          </button>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Mã số sinh viên (MSSV)</label>
+          <input id="regMssv" type="text" placeholder="VD: 2356100099" class="w-full bg-surface-950/70 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono transition-all">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Họ và tên</label>
+          <input id="regFullName" type="text" placeholder="VD: Nguyễn Lan Phương" class="w-full bg-surface-950/70 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-all">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Mật khẩu</label>
+          <input id="regPassword" type="password" placeholder="Tối thiểu 6 ký tự" class="w-full bg-surface-950/70 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-all">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300">Xác nhận mật khẩu</label>
+          <input id="regPasswordConfirm" type="password" placeholder="Nhập lại mật khẩu" class="w-full bg-surface-950/70 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-all">
+        </div>
+
+        <p id="regErrorMsg" class="text-[11px] text-rose-400 hidden flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 p-2 rounded-xl">
+          <i class="ph-fill ph-warning-circle text-sm"></i> <span id="regErrorText">Vui lòng điền đủ thông tin!</span>
+        </p>
+
+        <p id="regSuccessMsg" class="text-[11px] text-emerald-400 hidden flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-xl">
+          <i class="ph-fill ph-check-circle text-sm"></i> Đăng ký thành công! Đang chuyển hướng...
+        </p>
+
+        <button onclick="handleRegisterSubmit()" class="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-105 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-[0.98] transition-all">
+          <i class="ph-bold ph-user-check text-base"></i> Hoàn Tất Đăng Ký
+        </button>
+      </div>
+
+      <!-- Phím tắt mô phỏng -->
+      <div id="quickMockBox" class="bg-surface-950/60 border border-white/5 p-3.5 rounded-2xl text-[11px] space-y-2 text-slate-400 backdrop-blur-sm">
+        <span class="font-bold text-slate-300 flex items-center gap-1.5">
+          <i class="ph-fill ph-lightning text-amber-400 text-sm"></i> Chọn nhanh vai trò:
+        </span>
+        <div class="flex gap-2">
+          <button onclick="fillMockAccount('student')" class="flex-1 bg-surface-800/80 hover:bg-surface-700 hover:text-white text-slate-300 py-2 px-2.5 rounded-xl text-[10px] font-semibold text-center border border-white/5 transition-all">
+            Quyền Sinh Viên
+          </button>
+          <button onclick="fillMockAccount('admin')" class="flex-1 bg-surface-800/80 hover:bg-surface-700 hover:text-white text-slate-300 py-2 px-2.5 rounded-xl text-[10px] font-semibold text-center border border-white/5 transition-all">
+            Quyền Admin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= GIAO DIỆN 1: SINH VIÊN ================= -->
+  <div id="studentAppScreen" class="hidden w-full max-w-md bg-surface-900 min-h-screen sm:min-h-[844px] sm:h-[844px] sm:rounded-[40px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden border border-white/10 mesh-gradient">
+    
+    <div class="px-6 pt-3.5 pb-1 flex justify-between items-center text-xs text-slate-400 select-none z-20">
+      <span id="studentLiveClock" class="font-bold tracking-wider text-slate-200 font-mono">15:30</span>
+      <div class="flex items-center gap-1.5 text-sm">
+        <i class="ph-bold ph-cell-signal-full"></i>
+        <i class="ph-bold ph-wifi-high"></i>
+        <i class="ph-fill ph-battery-charging text-emerald-400 text-base"></i>
+      </div>
+    </div>
+
+    <header class="px-4 py-3 border-b border-white/5 bg-surface-900/80 backdrop-blur-xl sticky top-0 z-20 flex justify-between items-center">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-black shadow-md shadow-amber-500/20">
+          <i class="ph-bold ph-armchair text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-extrabold text-sm tracking-tight text-white leading-none">SEAT HUB</h1>
+            <span class="text-[9px] bg-amber-500/15 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-md font-mono font-semibold">SINH VIÊN</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium mt-0.5">Đặt chỗ & Quét RFID tại Quầy</p>
+        </div>
+      </div>
+
+      <button onclick="handleLogout()" class="flex items-center gap-1.5 text-[11px] bg-surface-800/80 hover:bg-surface-700 text-slate-200 border border-white/10 px-3 py-1.5 rounded-full font-mono transition-all">
+        <i class="ph-bold ph-user text-amber-400 text-xs"></i> <span id="studentHeaderMssv">2356100043</span>
+        <i class="ph-bold ph-sign-out text-slate-400 text-xs ml-0.5"></i>
+      </button>
+    </header>
+
+    <main class="flex-1 overflow-y-auto custom-scroll pb-24 px-4 pt-3 space-y-3.5">
+      <!-- TAB 1: THEO TẦNG -->
+      <section id="userTabMap" class="space-y-3.5">
+        <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-l-4 border-amber-400 p-3 rounded-r-2xl flex items-start gap-2.5 backdrop-blur-sm">
+          <i class="ph-fill ph-clock-countdown text-amber-400 text-lg flex-shrink-0 mt-0.5"></i>
+          <p class="text-[11px] text-amber-200/90 leading-relaxed font-medium">
+            Chọn tầng muốn ngồi, hệ thống sẽ <strong class="text-amber-300 font-bold">tự động xếp vị trí trống</strong>. Mang thẻ sinh viên quét RFID tại <strong class="text-amber-300 font-bold">Quầy Tầng 1</strong> trong vòng 15 phút.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="ph-bold ph-buildings text-amber-400"></i> Tình trạng chỗ theo tầng
+          </span>
+        </div>
+
+        <div id="userFloorCardsContainer" class="space-y-3"></div>
+      </section>
+
+      <!-- TAB 2: CỦA TÔI -->
+      <section id="userTabMySeat" class="hidden space-y-3">
+        <div id="userMySeatContainer"></div>
+      </section>
+
+      <!-- TAB 3: QUY ĐỊNH -->
+      <section id="userTabRules" class="hidden space-y-3">
+        <div class="bg-surface-850/60 border border-white/10 rounded-3xl p-5 space-y-4 backdrop-blur-md">
+          <h2 class="text-sm font-extrabold text-white flex items-center gap-2">
+            <i class="ph-bold ph-book-open-text text-amber-400 text-lg"></i>
+            Quy Định Dành Cho Sinh Viên
+          </h2>
+          <ul class="text-xs text-slate-300 space-y-3 leading-relaxed">
+            <li class="flex items-start gap-2.5">
+              <span class="w-6 h-6 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+              <span><strong>Tự động xếp chỗ:</strong> Hệ thống tự phân bổ ngẫu nhiên để tối ưu không gian học tập.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="w-6 h-6 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+              <span><strong>Quy định 15 phút:</strong> Quá 15 phút không quét thẻ tại Quầy Tầng 1, vị trí sẽ tự động bị thu hồi.</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <nav class="absolute bottom-0 left-0 right-0 h-16 bg-surface-900/90 border-t border-white/5 backdrop-blur-xl px-4 flex items-center justify-around z-20">
+      <button onclick="switchUserTab('map')" id="userNavMap" class="flex flex-col items-center gap-1 text-amber-400 transition-all">
+        <i class="ph-fill ph-buildings text-xl"></i>
+        <span class="text-[10px] font-bold">Theo tầng</span>
+      </button>
+      <button onclick="switchUserTab('mySeat')" id="userNavMySeat" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all relative">
+        <i class="ph-bold ph-armchair text-xl"></i>
+        <span class="text-[10px] font-semibold">Của tôi</span>
+        <span id="userMySeatDot" class="w-2 h-2 rounded-full bg-amber-400 absolute top-0 right-2 hidden shadow-[0_0_8px_#f59e0b]"></span>
+      </button>
+      <button onclick="switchUserTab('rules')" id="userNavRules" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <i class="ph-bold ph-shield-check text-xl"></i>
+        <span class="text-[10px] font-semibold">Quy định</span>
+      </button>
+    </nav>
+
+    <!-- Modal Đặt chỗ -->
+    <div id="bookingModal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex flex-col justify-end">
+      <div class="bg-surface-900 border-t border-white/10 rounded-t-[36px] p-6 space-y-4 max-h-[88vh] overflow-y-auto shadow-2xl">
+        <div class="w-12 h-1.5 bg-slate-700/60 rounded-full mx-auto mb-1"></div>
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Xác nhận đặt chỗ</span>
+            <h3 id="modalFloorTitle" class="text-base font-extrabold text-white">Tầng trệt</h3>
+          </div>
+          <button onclick="closeBookingModal()" class="w-8 h-8 rounded-full bg-surface-800 text-slate-400 flex items-center justify-center hover:text-white transition-colors">
+            <i class="ph-bold ph-x text-base"></i>
+          </button>
+        </div>
+
+        <div class="space-y-3 pt-1">
+          <div class="bg-surface-950/80 border border-white/5 rounded-2xl p-3.5 flex items-center justify-between text-xs">
+            <div>
+              <span class="text-[10px] text-slate-400 block font-medium">Sinh viên đặt chỗ:</span>
+              <span id="bookingModalStudentName" class="font-bold text-white text-sm">Nguyễn Lan Phương</span>
+            </div>
+            <span id="bookingModalStudentMssv" class="font-mono bg-amber-500/15 text-amber-400 px-2.5 py-1 rounded-lg border border-amber-500/30 font-bold text-xs">2356100043</span>
+          </div>
+
+          <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-3.5 text-xs text-indigo-200/90 flex items-center gap-3">
+            <i class="ph-fill ph-info text-indigo-400 text-xl flex-shrink-0"></i>
+            <span>Hệ thống sẽ <strong>tự động gán 1 vị trí trống</strong> tại tầng này và giữ chỗ trong <strong>15 phút</strong>.</span>
+          </div>
+
+          <button onclick="confirmAutoBooking()" class="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-105 text-slate-950 font-bold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-[0.98] transition-all">
+            <i class="ph-bold ph-check-circle text-base"></i> Xác Nhận Giữ Chỗ (15 Phút)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RFID Success Modal -->
+    <div id="rfidSuccessModal" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6">
+      <div class="bg-surface-900 border border-blue-500/40 rounded-3xl p-6 text-center space-y-4 max-w-xs w-full shadow-2xl relative overflow-hidden">
+        <div class="w-16 h-16 rounded-2xl bg-blue-500/20 text-blue-400 border border-blue-500/40 flex items-center justify-center mx-auto text-3xl shadow-lg shadow-blue-500/20 animate-pulse">
+          <i class="ph-bold ph-broadcast"></i>
+        </div>
+        <div>
+          <span class="text-[10px] text-blue-400 font-extrabold uppercase tracking-widest block">Quầy Thông Tin (Tầng 1)</span>
+          <h3 class="text-base font-extrabold text-white mt-0.5">Check-in RFID Thành Công!</h3>
+          <p id="rfidModalDesc" class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+            Đã kích hoạt vị trí thành công.
+          </p>
+        </div>
+        <button onclick="closeRfidModal()" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-bold py-3 rounded-xl text-xs shadow-md shadow-blue-500/30 transition-all">
+          Bắt Đầu Sử Dụng
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ================= GIAO DIỆN 2: QUẢN TRỊ VIÊN (ADMIN) ================= -->
+  <div id="adminAppScreen" class="hidden w-full max-w-md bg-surface-900 min-h-screen sm:min-h-[844px] sm:h-[844px] sm:rounded-[40px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden border border-white/10 mesh-gradient">
+    
+    <div class="px-6 pt-3.5 pb-1 flex justify-between items-center text-xs text-slate-400 select-none z-20">
+      <span id="adminLiveClock" class="font-bold tracking-wider text-slate-200 font-mono">15:30</span>
+      <div class="flex items-center gap-1.5 text-sm">
+        <i class="ph-bold ph-shield-check text-rose-400 text-base"></i>
+        <span class="text-[10px] text-rose-300 font-mono font-bold">ADMIN HUB</span>
+      </div>
+    </div>
+
+    <header class="px-4 py-3 border-b border-white/5 bg-surface-900/80 backdrop-blur-xl sticky top-0 z-20 flex justify-between items-center">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-rose-400 flex items-center justify-center text-white font-black shadow-md shadow-rose-500/20">
+          <i class="ph-bold ph-shield-star text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-extrabold text-sm tracking-tight text-white leading-none">SEAT HUB</h1>
+            <span class="text-[9px] bg-rose-500/15 text-rose-400 border border-rose-500/30 px-1.5 py-0.5 rounded-md font-mono font-semibold">QUẢN TRỊ</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium mt-0.5">Giám sát & Báo cáo thống kê thư viện</p>
+        </div>
+      </div>
+
+      <button onclick="handleLogout()" class="flex items-center gap-1.5 text-[11px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-full font-semibold transition-all">
+        <i class="ph-bold ph-sign-out text-xs"></i> Đăng xuất
+      </button>
+    </header>
+
+    <main class="flex-1 overflow-y-auto custom-scroll pb-24 px-4 pt-3 space-y-3.5">
+      
+      <!-- TAB ADMIN 1: GIÁM SÁT THỜI GIAN THỰC (ĐÃ THÊM Ô 'GIỮ CHỖ' VÀO LƯỚI 4 CỘT) -->
+      <section id="adminTabOverview" class="space-y-3.5">
+        <div class="grid grid-cols-4 gap-1.5 text-center">
+          <!-- Tổng vị trí -->
+          <div class="bg-surface-850/70 border border-white/5 p-2.5 rounded-2xl shadow-sm">
+            <span class="text-[9px] text-slate-400 block font-medium truncate">Tổng vị trí</span>
+            <span id="adminTotalSeats" class="text-sm sm:text-base font-extrabold text-white font-mono">51</span>
+          </div>
+          <!-- Ghế trống -->
+          <div class="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-2xl">
+            <span class="text-[9px] text-emerald-400 block font-medium truncate">Ghế trống</span>
+            <span id="adminTotalAvail" class="text-sm sm:text-base font-extrabold text-emerald-400 font-mono">0</span>
+          </div>
+          <!-- Đang giữ chỗ (MỚI THÊM) -->
+          <div class="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-2xl">
+            <span class="text-[9px] text-amber-400 block font-medium truncate">Giữ chỗ</span>
+            <span id="adminTotalHolding" class="text-sm sm:text-base font-extrabold text-amber-400 font-mono">0</span>
+          </div>
+          <!-- Đang dùng -->
+          <div class="bg-blue-500/10 border border-blue-500/20 p-2.5 rounded-2xl">
+            <span class="text-[9px] text-blue-400 block font-medium truncate">Đang dùng</span>
+            <span id="adminTotalOcc" class="text-sm sm:text-base font-extrabold text-blue-400 font-mono">0</span>
+          </div>
+        </div>
+
+        <div class="bg-surface-850/60 border border-white/10 rounded-3xl p-4 space-y-3 backdrop-blur-md">
+          <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+            <i class="ph-bold ph-buildings text-amber-400"></i> Trạng thái hiện tại các tầng
+          </span>
+          <div id="adminFloorStatsContainer" class="space-y-2.5"></div>
+        </div>
+
+        <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-3xl p-4 space-y-2.5 backdrop-blur-md">
+          <div class="flex items-center justify-between text-xs font-bold text-indigo-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-broadcast text-indigo-400"></i> Quầy RFID Tầng 1 (Mô Phỏng)</span>
+            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-mono font-bold">Reader</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-relaxed font-medium">
+            Kích hoạt đồng loạt cho các bạn đọc đang giữ chỗ 15 phút đã đến quầy trình thẻ.
+          </p>
+          <button onclick="adminCheckInAllHolding()" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:brightness-105 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all">
+            <i class="ph-bold ph-check-square"></i> Quét xác nhận tất cả chỗ chờ RFID
+          </button>
+        </div>
+      </section>
+
+      <!-- TAB ADMIN 2: THỐNG KÊ THEO NGÀY / TUẦN / THÁNG / NĂM -->
+      <section id="adminTabAnalytics" class="space-y-3.5">
+        
+        <!-- BỘ LỌC CHU KỲ: NGÀY / TUẦN / THÁNG / NĂM -->
+        <div class="grid grid-cols-4 gap-1 bg-surface-950/80 p-1.5 rounded-2xl border border-white/5 text-[11px] shadow-inner font-semibold">
+          <button onclick="changeAnalyticsPeriod('day')" id="btnPeriodDay" class="py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all text-center">
+            Ngày
+          </button>
+          <button onclick="changeAnalyticsPeriod('week')" id="btnPeriodWeek" class="py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all text-center">
+            Tuần
+          </button>
+          <button onclick="changeAnalyticsPeriod('month')" id="btnPeriodMonth" class="py-2 rounded-xl bg-gradient-to-r from-rose-500 to-rose-400 text-white transition-all text-center shadow-md shadow-rose-500/20 font-bold">
+            Tháng
+          </button>
+          <button onclick="changeAnalyticsPeriod('year')" id="btnPeriodYear" class="py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all text-center">
+            Năm
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between px-1">
+          <span id="analyticsPeriodLabel" class="text-[11px] text-rose-300 font-bold flex items-center gap-1.5">
+            <i class="ph-bold ph-calendar"></i> Báo cáo: 30 Ngày qua (Tháng này)
+          </span>
+          <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Dữ liệu hoạt động thực tế
+          </span>
+        </div>
+
+        <!-- 1 & 2: SỐ LƯỢNG ĐĂNG KÝ CHỖ NGỒI & SỐ LƯỢNG HỦY -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- Số lượng đăng ký -->
+          <div class="bg-surface-850/60 border border-white/10 rounded-2xl p-3.5 space-y-1.5 shadow-sm backdrop-blur-md">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-slate-400 font-medium">Số lượng đăng ký</span>
+              <div class="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs">
+                <i class="ph-bold ph-ticket"></i>
+              </div>
+            </div>
+            <div id="metricTotalRegistrations" class="text-xl font-extrabold text-white font-mono">0</div>
+            <span class="text-[9px] text-blue-400 block font-semibold flex items-center gap-1">
+              <i class="ph-bold ph-check"></i> <span id="metricSuccessRegistrations">0 thành công</span>
+            </span>
+          </div>
+
+          <!-- Số lượng hủy -->
+          <div class="bg-surface-850/60 border border-white/10 rounded-2xl p-3.5 space-y-1.5 shadow-sm backdrop-blur-md">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-slate-400 font-medium">Số lượng hủy</span>
+              <div class="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center text-xs">
+                <i class="ph-bold ph-x-circle"></i>
+              </div>
+            </div>
+            <div id="metricTotalCancelled" class="text-xl font-extrabold text-rose-400 font-mono">0</div>
+            <span class="text-[9px] text-slate-400 block font-medium">
+              Tỷ lệ hủy: <strong id="metricCancelRate" class="text-rose-300 font-mono font-bold">0%</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- 3: THỜI ĐIỂM SỬ DỤNG THƯ VIỆN NHIỀU NHẤT -->
+        <div class="bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-transparent border border-amber-500/30 rounded-3xl p-4 space-y-2 backdrop-blur-md relative overflow-hidden shadow-lg shadow-amber-500/5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-lg border border-amber-500/30 shadow-inner">
+                <i class="ph-bold ph-fire"></i>
+              </div>
+              <div>
+                <span class="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider block">Thời điểm sử dụng nhiều nhất</span>
+                <h4 id="metricPeakHours" class="text-base font-extrabold text-white font-mono">Chưa có dữ liệu</h4>
+              </div>
+            </div>
+            <span id="metricPeakLoadBadge" class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full font-bold font-mono">
+              Đỉnh: 0% lượt
+            </span>
+          </div>
+          <p id="metricPeakHoursDesc" class="text-[11px] text-slate-300 leading-relaxed font-medium">
+            Chưa phát sinh dữ liệu lượt học trong khoảng thời gian này.
+          </p>
+        </div>
+
+        <!-- 4: NHU CẦU SỬ DỤNG THEO TẦNG -->
+        <div class="bg-surface-850/60 border border-white/10 rounded-3xl p-4 space-y-3 backdrop-blur-md">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <i class="ph-bold ph-buildings text-rose-400"></i> Nhu Cầu Sử Dụng Theo Tầng
+            </h3>
+            <span class="text-[10px] text-slate-400">Tỷ lệ sử dụng thực tế</span>
+          </div>
+          <div id="analyticsFloorBreakdown" class="space-y-2.5 text-xs"></div>
+        </div>
+
+        <!-- Đề xuất vận hành -->
+        <div class="bg-surface-950/80 border border-white/5 rounded-2xl p-3.5 text-[11px] text-slate-400 space-y-1 leading-relaxed">
+          <span class="font-bold text-slate-200 flex items-center gap-1.5">
+            <i class="ph-fill ph-info text-amber-400"></i> Đề xuất vận hành:
+          </span>
+          <p id="analyticsNote">
+            Số liệu phản ánh trung thực mọi hành vi đặt chỗ, quét thẻ check-in và hủy vị trí của bạn đọc trên hệ thống.
+          </p>
+        </div>
+      </section>
+
+      <!-- TAB ADMIN 3: DANH SÁCH BẠN ĐỌC ĐANG DÙNG / GIỮ CHỖ -->
+      <section id="adminTabActiveUsers" class="hidden space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="ph-bold ph-users-three text-rose-400"></i> Bạn đọc đang giữ / dùng chỗ
+          </span>
+          <span id="adminActiveCountLabel" class="text-[10px] bg-surface-800 border border-white/5 px-2.5 py-0.5 rounded-full text-slate-400 font-mono font-bold">0 chỗ</span>
+        </div>
+
+        <div id="adminOccupiedList" class="space-y-2"></div>
+      </section>
+
+    </main>
+
+    <nav class="absolute bottom-0 left-0 right-0 h-16 bg-surface-900/90 border-t border-white/5 backdrop-blur-xl px-4 flex items-center justify-around z-20">
+      <button onclick="switchAdminTab('overview')" id="adminNavOverview" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <i class="ph-fill ph-airplay text-xl"></i>
+        <span class="text-[10px] font-semibold">Giám sát</span>
+      </button>
+      <button onclick="switchAdminTab('analytics')" id="adminNavAnalytics" class="flex flex-col items-center gap-1 text-rose-400 transition-all">
+        <i class="ph-bold ph-chart-line-up text-xl"></i>
+        <span class="text-[10px] font-bold">Báo cáo</span>
+      </button>
+      <button onclick="switchAdminTab('activeUsers')" id="adminNavActiveUsers" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <i class="ph-bold ph-identification-badge text-xl"></i>
+        <span class="text-[10px] font-semibold">Bạn đọc</span>
+      </button>
+    </nav>
+
+  </div>
+
+
+  <!-- ================= LOGIC JAVASCRIPT ================= -->
+  <script>
+    const HOLD_DURATION_SECONDS = 15 * 60; // 15 phút
+
+    // Danh sách tài khoản sinh viên đăng ký
+    let registeredStudents = [
+      { mssv: '2356100043', name: 'Nguyễn Lan Phương', pass: '123456' },
+      { mssv: '2356100002', name: 'Nguyễn Ngọc Mai', pass: '123456' },
+      { mssv: '20241001', name: 'Trần Văn Nam', pass: '123456' }
+    ];
+
+    // Cấu hình các tầng
+    const floorConfigs = [
+      { prefix: 'G', floor: 'G', count: 20, name: 'Tầng trệt', subtitle: 'Khu tự học chung', type: 'seat' },
+      { prefix: 'P.M', floor: 'M', count: 6, name: 'Tầng lửng', subtitle: 'Phòng học nhóm cách âm', type: 'room' },
+      { prefix: 'L1', floor: 'L1', count: 15, name: 'Tầng 1', subtitle: 'Khu yên tĩnh & Quầy RFID', type: 'seat' },
+      { prefix: 'L2', floor: 'L2', count: 10, name: 'Tầng 2', subtitle: 'Khu nghiên cứu chuyên sâu', type: 'seat' }
+    ];
+
+    // Khung giờ hoạt động của thư viện
+    const timeSlots = [
+      { id: 'T1', label: '07:30 - 09:30', startH: 7.5, endH: 9.5 },
+      { id: 'T2', label: '09:30 - 11:30', startH: 9.5, endH: 11.5 },
+      { id: 'T3', label: '11:30 - 13:30', startH: 11.5, endH: 13.5 },
+      { id: 'T4', label: '13:30 - 15:30', startH: 13.5, endH: 15.5 },
+      { id: 'T5', label: '15:30 - 17:30', startH: 15.5, endH: 17.5 },
+      { id: 'T6', label: '17:30 - 20:00', startH: 17.5, endH: 20.0 }
+    ];
+
+    // Khởi tạo danh sách ghế trống thực tế
+    let seats = [];
+    floorConfigs.forEach(fc => {
+      for (let i = 1; i <= fc.count; i++) {
+        const id = `${fc.prefix}-${i.toString().padStart(2, '0')}`;
+        seats.push({
+          id: id,
+          floor: fc.floor,
+          floorName: fc.name,
+          type: fc.type,
+          capacity: fc.type === 'room' ? '4 - 8 người' : '1 người',
+          status: 'available',
+          mssv: null,
+          studentName: null,
+          reservedAt: null,
+          checkInAt: null,
+          bookingLogId: null
+        });
+      }
+    });
+
+    // MẢNG NHẬT KÝ THỰC TẾ
+    let sessionLogs = [];
+
+    // Biến trạng thái
+    let currentUserRole = null; 
+    let currentStudent = null;
+    let targetBookingFloor = null;
+    let currentUserTab = 'map';
+    let currentAdminTab = 'overview';
+    let currentLoginTabRole = 'student';
+    let currentAuthMode = 'login';
+    let currentAnalyticsPeriod = 'month';
+
+    // ================= BỘ MÁY TÍNH TOÁN DỮ LIỆU THỰC TẾ =================
+    function calculateAnalytics(period) {
+      const now = Date.now();
+      let cutoffTime = 0;
+
+      if (period === 'day') {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        cutoffTime = startOfToday.getTime(); // Từ 00:00 hôm nay
+      } else if (period === 'week') {
+        cutoffTime = now - (7 * 86400000); // 7 ngày qua
+      } else if (period === 'month') {
+        cutoffTime = now - (30 * 86400000); // 30 ngày qua
+      } else {
+        cutoffTime = now - (365 * 86400000); // 1 năm qua
+      }
+
+      // Lọc các bản ghi thực tế phát sinh trong chu kỳ
+      const filteredLogs = sessionLogs.filter(log => log.timestamp >= cutoffTime);
+
+      const totalRegistrations = filteredLogs.length;
+      const completedSessions = filteredLogs.filter(log => log.status === 'completed' || log.status === 'in_use');
+      const cancelledSessions = filteredLogs.filter(log => log.status === 'cancelled');
+
+      const totalCompleted = completedSessions.length;
+      const totalCancelled = cancelledSessions.length;
+      const cancelRate = totalRegistrations > 0 ? ((totalCancelled / totalRegistrations) * 100).toFixed(1) : '0.0';
+
+      // Nhu cầu sử dụng theo tầng
+      const floorStats = floorConfigs.map(fc => {
+        const floorCompletedLogs = filteredLogs.filter(log => log.floor === fc.floor && (log.status === 'completed' || log.status === 'in_use'));
+        const countUsage = floorCompletedLogs.length;
+
+        // Tỷ lệ phần trăm nhu cầu của tầng so với tổng số lượt thực tế
+        const rate = totalCompleted > 0 ? Math.round((countUsage / totalCompleted) * 100) : 0;
+
+        return {
+          name: `${fc.name} (${fc.count} ${fc.type === 'room' ? 'phòng nhóm' : 'ghế'})`,
+          floor: fc.floor,
+          usage: countUsage,
+          rate: rate
+        };
+      });
+
+      // Thời điểm sử dụng nhiều nhất (Khung giờ đỉnh từ thực tế)
+      let peakSlot = null;
+      let maxSlotCount = -1;
+
+      timeSlots.forEach(slot => {
+        const countInSlot = completedSessions.filter(log => {
+          const h = log.startHour !== undefined ? log.startHour : 14.0;
+          return h >= slot.startH && h < slot.endH;
+        }).length;
+
+        if (countInSlot > maxSlotCount && countInSlot > 0) {
+          maxSlotCount = countInSlot;
+          peakSlot = slot;
+        }
+      });
+
+      const peakHoursLabel = peakSlot ? peakSlot.label : 'Chưa có dữ liệu';
+      const peakPercentage = totalCompleted > 0 && maxSlotCount > 0 ? Math.round((maxSlotCount / totalCompleted) * 100) : 0;
+
+      return {
+        totalRegistrations: totalRegistrations.toLocaleString(),
+        totalCompleted: totalCompleted.toLocaleString(),
+        totalCancelled: totalCancelled.toLocaleString(),
+        cancelRate: `${cancelRate}%`,
+        floors: floorStats,
+        peakHours: peakHoursLabel,
+        peakPercentage: peakPercentage
+      };
+    }
+
+    // ================= XỬ LÝ ĐĂNG NHẬP / ĐĂNG KÝ =================
+    function toggleAuthMode(mode) {
+      currentAuthMode = mode;
+      const loginBox = document.getElementById('loginFormContainer');
+      const regBox = document.getElementById('registerFormContainer');
+      const roleSelector = document.getElementById('roleSelector');
+      const quickMockBox = document.getElementById('quickMockBox');
+
+      document.getElementById('authErrorMsg').classList.add('hidden');
+      document.getElementById('regErrorMsg').classList.add('hidden');
+      document.getElementById('regSuccessMsg').classList.add('hidden');
+
+      if (mode === 'register') {
+        loginBox.classList.add('hidden');
+        regBox.classList.remove('hidden');
+        roleSelector.classList.add('hidden');
+        quickMockBox.classList.add('hidden');
+      } else {
+        loginBox.classList.remove('hidden');
+        regBox.classList.add('hidden');
+        roleSelector.classList.remove('hidden');
+        quickMockBox.classList.remove('hidden');
+      }
+    }
+
+    function switchLoginRole(role) {
+      currentLoginTabRole = role;
+      const btnStudent = document.getElementById('btnTabStudent');
+      const btnAdmin = document.getElementById('btnTabAdmin');
+      const lblUsername = document.getElementById('lblUsername');
+      const inputUsername = document.getElementById('inputUsername');
+      const inputPassword = document.getElementById('inputPassword');
+      const btnGoToRegister = document.getElementById('btnGoToRegister');
+      const formHeading = document.getElementById('formLoginHeading');
+
+      document.getElementById('authErrorMsg').classList.add('hidden');
+
+      if (role === 'student') {
+        btnStudent.className = "py-2.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20";
+        btnAdmin.className = "py-2.5 rounded-xl font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
+        lblUsername.innerText = "Mã số sinh viên (MSSV)";
+        inputUsername.value = "2356100043";
+        inputPassword.value = "123456";
+        btnGoToRegister.classList.remove('hidden');
+        formHeading.innerText = "Đăng nhập sinh viên";
+      } else {
+        btnAdmin.className = "py-2.5 rounded-xl font-bold bg-gradient-to-r from-rose-500 to-rose-400 text-white transition-all flex items-center justify-center gap-1.5 shadow-md shadow-rose-500/20";
+        btnStudent.className = "py-2.5 rounded-xl font-semibold text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
+        lblUsername.innerText = "Tên tài khoản quản trị";
+        inputUsername.value = "admin";
+        inputPassword.value = "admin123";
+        btnGoToRegister.classList.add('hidden');
+        formHeading.innerText = "Đăng nhập quản trị viên";
+      }
+    }
+
+    function handleRegisterSubmit() {
+      const mssv = document.getElementById('regMssv').value.trim();
+      const name = document.getElementById('regFullName').value.trim();
+      const pass = document.getElementById('regPassword').value.trim();
+      const passConfirm = document.getElementById('regPasswordConfirm').value.trim();
+
+      const errBox = document.getElementById('regErrorMsg');
+      const errText = document.getElementById('regErrorText');
+      const successBox = document.getElementById('regSuccessMsg');
+
+      errBox.classList.add('hidden');
+      successBox.classList.add('hidden');
+
+      if (!mssv || !name || !pass || !passConfirm) {
+        errText.innerText = "Vui lòng nhập đầy đủ tất cả thông tin!";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (pass.length < 6) {
+        errText.innerText = "Mật khẩu phải chứa ít nhất 6 ký tự!";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (pass !== passConfirm) {
+        errText.innerText = "Mật khẩu xác nhận không trùng khớp!";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      const isExist = registeredStudents.some(s => s.mssv.toLowerCase() === mssv.toLowerCase());
+      if (isExist) {
+        errText.innerText = "Mã số sinh viên này đã được đăng ký trước đó!";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      const newStudent = { mssv, name, pass };
+      registeredStudents.push(newStudent);
+      successBox.classList.remove('hidden');
+
+      setTimeout(() => {
+        currentStudent = newStudent;
+        currentUserRole = 'student';
+        toggleAuthMode('login');
+        showStudentApp();
+      }, 1000);
+    }
+
+    function fillMockAccount(role) {
+      toggleAuthMode('login');
+      switchLoginRole(role);
+      handleLoginSubmit();
+    }
+
+    function handleLoginSubmit() {
+      const u = document.getElementById('inputUsername').value.trim();
+      const p = document.getElementById('inputPassword').value.trim();
+      const err = document.getElementById('authErrorMsg');
+
+      if (currentLoginTabRole === 'student') {
+        const found = registeredStudents.find(s => s.mssv.toLowerCase() === u.toLowerCase() && s.pass === p);
+        if (found) {
+          currentStudent = found;
+          currentUserRole = 'student';
+          err.classList.add('hidden');
+          showStudentApp();
+        } else {
+          err.classList.remove('hidden');
+        }
+      } else {
+        if (u === 'admin' && p === 'admin123') {
+          currentUserRole = 'admin';
+          err.classList.add('hidden');
+          showAdminApp();
+        } else {
+          err.classList.remove('hidden');
+        }
+      }
+    }
+
+    function handleLogout() {
+      currentUserRole = null;
+      currentStudent = null;
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('studentAppScreen').classList.add('hidden');
+      document.getElementById('adminAppScreen').classList.add('hidden');
+      toggleAuthMode('login');
+    }
+
+    function showStudentApp() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('adminAppScreen').classList.add('hidden');
+      document.getElementById('studentAppScreen').classList.remove('hidden');
+      document.getElementById('studentHeaderMssv').innerText = currentStudent.mssv;
+      renderUserFloorCards();
+      switchUserTab('map');
+    }
+
+    function showAdminApp() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('studentAppScreen').classList.add('hidden');
+      document.getElementById('adminAppScreen').classList.remove('hidden');
+      renderAdminDashboard();
+      switchAdminTab('overview');
+    }
+
+    // ================= LOGIC SINH VIÊN =================
+    function getMyCurrentSeat() {
+      if (!currentStudent) return null;
+      return seats.find(s => s.mssv === currentStudent.mssv && s.status !== 'available') || null;
+    }
+
+    function renderUserFloorCards() {
+      const container = document.getElementById('userFloorCardsContainer');
+      container.innerHTML = '';
+
+      floorConfigs.forEach(fc => {
+        const floorSeats = seats.filter(s => s.floor === fc.floor);
+        const availableCount = floorSeats.filter(s => s.status === 'available').length;
+        const holdingCount = floorSeats.filter(s => s.status === 'holding').length;
+        const occupiedCount = floorSeats.filter(s => s.status === 'occupied').length;
+        const isFull = availableCount === 0;
+
+        const card = document.createElement('div');
+        card.className = "bg-surface-850/60 border border-white/10 rounded-3xl p-4.5 space-y-3.5 shadow-md backdrop-blur-md transition-all hover:border-white/20";
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-sm text-white">${fc.name}</span>
+                <span class="text-[9px] ${fc.type === 'room' ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30' : 'bg-surface-800 text-slate-300 border-white/10'} border px-2 py-0.5 rounded-full font-mono font-semibold">
+                  Tổng ${fc.count} ${fc.type === 'room' ? 'phòng' : 'ghế'}
+                </span>
+              </div>
+              <span class="text-[11px] text-slate-400 block mt-1 font-medium">${fc.subtitle}</span>
+            </div>
+
+            <button onclick="openBookingForFloor('${fc.floor}')" ${isFull ? 'disabled' : ''} class="${
+              isFull 
+                ? 'bg-surface-800 text-slate-500 border border-white/5 cursor-not-allowed' 
+                : 'bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-105 text-slate-950 font-bold active:scale-95 shadow-md shadow-amber-500/20'
+            } px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all">
+              ${isFull ? 'Đã hết chỗ' : 'Đặt chỗ <i class="ph-bold ph-arrow-right text-xs"></i>'}
+            </button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-1 border-t border-white/5 text-center">
+            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl py-2.5 px-1.5">
+              <span class="text-[10px] text-emerald-400 block font-semibold mb-0.5">Ghế trống</span>
+              <span class="text-base font-extrabold text-emerald-400 font-mono">${availableCount}</span>
+            </div>
+            <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl py-2.5 px-1.5">
+              <span class="text-[10px] text-amber-400 block font-semibold mb-0.5">Đã đặt</span>
+              <span class="text-base font-extrabold text-amber-400 font-mono">${holdingCount}</span>
+            </div>
+            <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl py-2.5 px-1.5">
+              <span class="text-[10px] text-blue-400 block font-semibold mb-0.5">Đang dùng</span>
+              <span class="text-base font-extrabold text-blue-400 font-mono">${occupiedCount}</span>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      const mySeat = getMyCurrentSeat();
+      const dot = document.getElementById('userMySeatDot');
+      if (mySeat) dot.classList.remove('hidden');
+      else dot.classList.add('hidden');
+    }
+
+    function openBookingForFloor(floor) {
+      if (!currentStudent) return;
+
+      const existing = getMyCurrentSeat();
+      if (existing) {
+        alert(`Bạn đang giữ vị trí ${existing.id} (${existing.floorName}). Mỗi sinh viên chỉ được đặt 1 vị trí cùng lúc!`);
+        return;
+      }
+
+      targetBookingFloor = floor;
+      const fc = floorConfigs.find(f => f.floor === floor);
+      document.getElementById('modalFloorTitle').innerText = `${fc.name} - ${fc.subtitle}`;
+      document.getElementById('bookingModalStudentName').innerText = currentStudent.name;
+      document.getElementById('bookingModalStudentMssv').innerText = currentStudent.mssv;
+      document.getElementById('bookingModal').classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      targetBookingFloor = null;
+      document.getElementById('bookingModal').classList.add('hidden');
+    }
+
+    // XÁC NHẬN GIỮ CHỖ THỰC TẾ
+    function confirmAutoBooking() {
+      if (!currentStudent || !targetBookingFloor) return;
+
+      const availableSeat = seats.find(s => s.floor === targetBookingFloor && s.status === 'available');
+      if (!availableSeat) {
+        alert('Rất tiếc, tầng này vừa hết chỗ!');
+        closeBookingModal();
+        renderUserFloorCards();
+        return;
+      }
+
+      const logId = `LOG-${Date.now()}`;
+      const nowDate = new Date();
+      const startHourVal = nowDate.getHours() + (nowDate.getMinutes() / 60);
+
+      availableSeat.status = 'holding';
+      availableSeat.mssv = currentStudent.mssv;
+      availableSeat.studentName = currentStudent.name;
+      availableSeat.reservedAt = Date.now();
+      availableSeat.bookingLogId = logId;
+
+      sessionLogs.unshift({
+        id: logId,
+        seatId: availableSeat.id,
+        floor: availableSeat.floor,
+        mssv: currentStudent.mssv,
+        status: 'holding',
+        durationMinutes: 0,
+        startHour: startHourVal,
+        timestamp: Date.now()
+      });
+
+      closeBookingModal();
+      renderUserFloorCards();
+      switchUserTab('mySeat');
+    }
+
+    function renderUserMySeatView() {
+      const container = document.getElementById('userMySeatContainer');
+      const myItem = getMyCurrentSeat();
+
+      if (!myItem) {
+        container.innerHTML = `
+          <div class="text-center py-16 space-y-3.5">
+            <div class="w-16 h-16 rounded-3xl bg-surface-850/80 border border-white/5 flex items-center justify-center mx-auto text-slate-500 text-3xl shadow-inner">
+              <i class="ph-bold ph-armchair"></i>
+            </div>
+            <div class="space-y-1">
+              <h3 class="font-bold text-sm text-slate-200">Bạn chưa đặt chỗ nào</h3>
+              <p class="text-xs text-slate-400 max-w-xs mx-auto">Vui lòng quay lại tab "Theo tầng" để chọn không gian học tập.</p>
+            </div>
+            <button onclick="switchUserTab('map')" class="mt-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-105 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs inline-flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all">
+              <i class="ph-bold ph-buildings"></i> Chọn tầng ngay
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const isHolding = myItem.status === 'holding';
+      const isRoom = myItem.type === 'room';
+      const rem = isHolding ? getRemainingSeconds(myItem.reservedAt) : 0;
+
+      container.innerHTML = `
+        <div class="bg-surface-850/70 border ${isHolding ? 'border-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.1)]' : 'border-blue-500/30 shadow-[0_0_25px_rgba(59,130,246,0.1)]'} rounded-3xl p-5 space-y-4 backdrop-blur-md relative overflow-hidden">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-[10px] ${isRoom ? 'text-indigo-400' : 'text-amber-400'} font-bold uppercase tracking-wider block mb-1">
+                Vị trí được phân bổ cho bạn
+              </span>
+              <h2 class="text-3xl font-extrabold text-white font-mono tracking-tight">${myItem.id}</h2>
+              <span class="text-xs text-slate-400 font-medium">${myItem.floorName}</span>
+            </div>
+            <span class="text-[10px] ${isHolding ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-blue-500/15 text-blue-300 border-blue-500/30'} border px-3 py-1 rounded-full font-bold">
+              ${isHolding ? 'Chờ Quét RFID (15p)' : 'Đang Sử Dụng'}
+            </span>
+          </div>
+
+          ${isHolding ? `
+            <div class="bg-surface-950/80 border border-white/5 rounded-2xl p-4 text-center space-y-1.5 shadow-inner">
+              <span class="text-[11px] text-slate-400 font-medium">Thời gian giữ chỗ còn lại</span>
+              <div class="text-3xl font-mono font-extrabold text-amber-400 tracking-wider">
+                ${formatTime(rem)}
+              </div>
+              <p class="text-[10px] text-slate-400 font-medium">Mang thẻ sinh viên xuống Quầy Tầng 1 quét RFID để kích hoạt.</p>
+            </div>
+          ` : `
+            <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3.5 text-center space-y-1">
+              <span class="text-xs text-blue-300 font-bold flex items-center justify-center gap-1.5">
+                <i class="ph-fill ph-check-circle text-base text-blue-400"></i> Đã kích hoạt thẻ RFID thành công
+              </span>
+            </div>
+          `}
+
+          <div class="bg-surface-950/80 border border-white/5 rounded-2xl p-3.5 space-y-1.5 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400 font-medium">Sinh viên:</span>
+              <span class="font-bold text-white">${myItem.studentName} (${myItem.mssv})</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-400 font-medium">Khu vực:</span>
+              <span class="text-slate-200 font-semibold">${myItem.floorName}</span>
+            </div>
+          </div>
+
+          ${isHolding ? `
+            <button onclick="simulateScanRFID()" class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-500 hover:brightness-105 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all">
+              <i class="ph-bold ph-credit-card text-base"></i> Mô Phỏng Quét Thẻ RFID Tại Quầy
+            </button>
+            <button onclick="cancelMySeat('${myItem.id}')" class="w-full text-slate-400 hover:text-rose-400 text-xs py-1.5 flex items-center justify-center gap-1 font-semibold transition-colors">
+              <i class="ph-bold ph-x text-xs"></i> Hủy yêu cầu đặt chỗ
+            </button>
+          ` : `
+            <button onclick="checkOutMySeat('${myItem.id}')" class="w-full bg-surface-800 hover:bg-surface-700 text-slate-200 border border-white/10 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all">
+              <i class="ph-bold ph-sign-out text-base"></i> Trả Chỗ & Kết Thúc
+            </button>
+          `}
+        </div>
+      `;
+    }
+
+    // CHECK-IN RFID THỰC TẾ
+    function simulateScanRFID() {
+      const myItem = getMyCurrentSeat();
+      if (!myItem || myItem.status !== 'holding') return;
+
+      playBeep();
+      myItem.status = 'occupied';
+      myItem.checkInAt = Date.now();
+
+      const log = sessionLogs.find(l => l.id === myItem.bookingLogId);
+      if (log) {
+        log.status = 'in_use';
+      }
+
+      document.getElementById('rfidModalDesc').innerHTML = `
+        Đã quét thẻ của <strong>MSSV: ${myItem.mssv}</strong>.<br>
+        Vị trí: <strong>${myItem.id} (${myItem.floorName})</strong> đã mở khóa thành công.
+      `;
+      document.getElementById('rfidSuccessModal').classList.remove('hidden');
+
+      renderUserFloorCards();
+      renderUserMySeatView();
+    }
+
+    function closeRfidModal() {
+      document.getElementById('rfidSuccessModal').classList.add('hidden');
+    }
+
+    // HỦY GIỮ CHỖ THỰC TẾ
+    function cancelMySeat(id) {
+      if (confirm('Bạn muốn hủy giữ chỗ này?')) {
+        const item = seats.find(s => s.id === id);
+        if (item && item.mssv === currentStudent.mssv) {
+          const log = sessionLogs.find(l => l.id === item.bookingLogId);
+          if (log) {
+            log.status = 'cancelled';
+          }
+
+          resetSeat(item);
+          renderUserFloorCards();
+          switchUserTab('map');
+        }
+      }
+    }
+
+    // TRẢ CHỖ THỰC TẾ
+    function checkOutMySeat(id) {
+      if (confirm('Xác nhận hoàn tất phiên học và trả lại vị trí?')) {
+        const item = seats.find(s => s.id === id);
+        if (item && item.mssv === currentStudent.mssv) {
+          const elapsedMinutes = item.checkInAt ? Math.max(1, Math.round((Date.now() - item.checkInAt) / 60000)) : 15;
+
+          const log = sessionLogs.find(l => l.id === item.bookingLogId);
+          if (log) {
+            log.status = 'completed';
+            log.durationMinutes = elapsedMinutes;
+          }
+
+          resetSeat(item);
+          renderUserFloorCards();
+          switchUserTab('map');
+        }
+      }
+    }
+
+    function switchUserTab(tab) {
+      currentUserTab = tab;
+      const tabs = ['map', 'mySeat', 'rules'];
+      tabs.forEach(t => {
+        const sec = document.getElementById('userTab' + t.charAt(0).toUpperCase() + t.slice(1));
+        const btn = document.getElementById('userNav' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (t === tab) {
+          sec.classList.remove('hidden');
+          btn.className = "flex flex-col items-center gap-1 text-amber-400 transition-all";
+        } else {
+          sec.classList.add('hidden');
+          btn.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all";
+        }
+      });
+
+      if (tab === 'mySeat') renderUserMySeatView();
+      if (tab === 'map') renderUserFloorCards();
+    }
+
+    // ================= LOGIC ADMIN (ĐÃ CẬP NHẬT ĐỒNG BỘ 'GIỮ CHỖ') =================
+    function renderAdminDashboard() {
+      const total = seats.length;
+      const avail = seats.filter(s => s.status === 'available').length;
+      const holding = seats.filter(s => s.status === 'holding').length; // SỐ LƯỢNG ĐANG GIỮ CHỖ
+      const occ = seats.filter(s => s.status === 'occupied').length;
+
+      document.getElementById('adminTotalSeats').innerText = total;
+      document.getElementById('adminTotalAvail').innerText = avail;
+      document.getElementById('adminTotalHolding').innerText = holding; // HIỂN THỊ Ô MỚI
+      document.getElementById('adminTotalOcc').innerText = occ;
+
+      const container = document.getElementById('adminFloorStatsContainer');
+      container.innerHTML = '';
+
+      floorConfigs.forEach(fc => {
+        const fSeats = seats.filter(s => s.floor === fc.floor);
+        const fAvail = fSeats.filter(s => s.status === 'available').length;
+        const fHold = fSeats.filter(s => s.status === 'holding').length;
+        const fOcc = fSeats.filter(s => s.status === 'occupied').length;
+        const occRate = Math.round(((fOcc + fHold) / fc.count) * 100);
+
+        const row = document.createElement('div');
+        row.className = "bg-surface-950/80 border border-white/5 p-3 rounded-2xl space-y-2 text-xs shadow-inner";
+        row.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-white">${fc.name}</span>
+            <span class="text-[11px] font-mono text-amber-400 font-bold">${occRate}% sử dụng</span>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-400 font-medium">
+            <span class="text-emerald-400">Trống: ${fAvail}</span>
+            <span class="text-amber-400">Giữ chỗ: ${fHold}</span>
+            <span class="text-blue-400">Đang dùng: ${fOcc}</span>
+          </div>
+          <div class="w-full bg-surface-900 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full transition-all duration-500" style="width: ${occRate}%"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      renderAdminOccupiedList();
+    }
+
+    function changeAnalyticsPeriod(period) {
+      currentAnalyticsPeriod = period;
+      const btnDay = document.getElementById('btnPeriodDay');
+      const btnWeek = document.getElementById('btnPeriodWeek');
+      const btnMonth = document.getElementById('btnPeriodMonth');
+      const btnYear = document.getElementById('btnPeriodYear');
+
+      const defaultClass = "py-2 rounded-xl text-slate-400 hover:text-slate-200 transition-all text-center";
+      const activeClass = "py-2 rounded-xl bg-gradient-to-r from-rose-500 to-rose-400 text-white transition-all text-center shadow-md shadow-rose-500/20 font-bold";
+
+      btnDay.className = defaultClass;
+      btnWeek.className = defaultClass;
+      btnMonth.className = defaultClass;
+      btnYear.className = defaultClass;
+
+      if (period === 'day') btnDay.className = activeClass;
+      else if (period === 'week') btnWeek.className = activeClass;
+      else if (period === 'month') btnMonth.className = activeClass;
+      else if (period === 'year') btnYear.className = activeClass;
+
+      renderAnalyticsView();
+    }
+
+    function renderAnalyticsView() {
+      const data = calculateAnalytics(currentAnalyticsPeriod);
+
+      const periodLabels = {
+        day: 'Báo cáo: Hôm nay',
+        week: 'Báo cáo: 7 Ngày qua (Tuần này)',
+        month: 'Báo cáo: 30 Ngày qua (Tháng này)',
+        year: 'Báo cáo: Toàn bộ năm học'
+      };
+
+      document.getElementById('analyticsPeriodLabel').innerHTML = `<i class="ph-bold ph-calendar"></i> ${periodLabels[currentAnalyticsPeriod]}`;
+      
+      document.getElementById('metricTotalRegistrations').innerText = data.totalRegistrations;
+      document.getElementById('metricSuccessRegistrations').innerText = `${data.totalCompleted} đã nhận chỗ`;
+
+      document.getElementById('metricTotalCancelled').innerText = data.totalCancelled;
+      document.getElementById('metricCancelRate').innerText = data.cancelRate;
+
+      document.getElementById('metricPeakHours').innerText = data.peakHours;
+      document.getElementById('metricPeakLoadBadge').innerText = `Đỉnh: ${data.peakPercentage}% lượt`;
+
+      if (data.peakPercentage > 0) {
+        document.getElementById('metricPeakHoursDesc').innerHTML = `Khoảng thời gian <strong>${data.peakHours}</strong> ghi nhận mật độ sinh viên đến nhận chỗ và học tập đông nhất (${data.peakPercentage}% tổng lưu lượng).`;
+      } else {
+        document.getElementById('metricPeakHoursDesc').innerHTML = `Chưa có lượt sử dụng nào được hoàn tất trong khoảng thời gian này.`;
+      }
+
+      const breakdownContainer = document.getElementById('analyticsFloorBreakdown');
+      breakdownContainer.innerHTML = '';
+
+      data.floors.forEach(f => {
+        const item = document.createElement('div');
+        item.className = "bg-surface-950/80 border border-white/5 p-3 rounded-2xl space-y-1.5 shadow-inner";
+        item.innerHTML = `
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-slate-200 font-bold">${f.name}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400 font-mono">${f.usage} lượt</span>
+              <span class="font-extrabold text-rose-400 font-mono">${f.rate}%</span>
+            </div>
+          </div>
+          <div class="w-full bg-surface-900 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-gradient-to-r from-rose-500 via-amber-500 to-amber-300 h-full rounded-full transition-all duration-500" style="width: ${f.rate}%"></div>
+          </div>
+        `;
+        breakdownContainer.appendChild(item);
+      });
+    }
+
+    function renderAdminOccupiedList() {
+      const listContainer = document.getElementById('adminOccupiedList');
+      listContainer.innerHTML = '';
+
+      const activeSeats = seats.filter(s => s.status !== 'available');
+      document.getElementById('adminActiveCountLabel').innerText = `${activeSeats.length} chỗ`;
+
+      if (activeSeats.length === 0) {
+        listContainer.innerHTML = `
+          <div class="text-center py-14 text-slate-500 text-xs font-medium">
+            Hiện không có bạn đọc nào đang giữ hoặc dùng chỗ.
+          </div>
+        `;
+        return;
+      }
+
+      activeSeats.forEach(s => {
+        const isHolding = s.status === 'holding';
+        const card = document.createElement('div');
+        card.className = "bg-surface-850/60 border border-white/10 rounded-2xl p-3.5 flex items-center justify-between text-xs backdrop-blur-md shadow-sm";
+
+        card.innerHTML = `
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-bold text-white text-sm">${s.id}</span>
+              <span class="text-[9px] ${isHolding ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-blue-500/15 text-blue-300 border-blue-500/30'} px-2 py-0.5 rounded-full font-bold">
+                ${isHolding ? 'Chờ RFID (15p)' : 'Đang dùng'}
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Bạn đọc: <strong class="text-slate-200">${s.studentName || 'Sinh viên'}</strong> (${s.mssv})
+            </div>
+            <span class="text-[10px] text-slate-500 font-medium block">${s.floorName}</span>
+          </div>
+
+          <button onclick="adminForceRelease('${s.id}')" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1 transition-all">
+            <i class="ph-bold ph-trash"></i> Thu hồi
+          </button>
+        `;
+
+        listContainer.appendChild(card);
+      });
+    }
+
+    function adminForceRelease(id) {
+      if (confirm(`Quản trị viên muốn cưỡng chế thu hồi vị trí ${id}?`)) {
+        const item = seats.find(s => s.id === id);
+        if (item) {
+          const log = sessionLogs.find(l => l.id === item.bookingLogId);
+          if (log) {
+            log.status = 'cancelled';
+          }
+
+          resetSeat(item);
+          renderAdminDashboard();
+        }
+      }
+    }
+
+    function adminCheckInAllHolding() {
+      const holdingList = seats.filter(s => s.status === 'holding');
+      if (holdingList.length === 0) {
+        alert('Hiện không có vị trí nào đang chờ quét RFID!');
+        return;
+      }
+      playBeep();
+      holdingList.forEach(s => {
+        s.status = 'occupied';
+        s.checkInAt = Date.now();
+        const log = sessionLogs.find(l => l.id === s.bookingLogId);
+        if (log) log.status = 'in_use';
+      });
+      alert(`Đã kích hoạt thành công cho ${holdingList.length} vị trí!`);
+      renderAdminDashboard();
+    }
+
+    function switchAdminTab(tab) {
+      currentAdminTab = tab;
+      const secOverview = document.getElementById('adminTabOverview');
+      const secAnalytics = document.getElementById('adminTabAnalytics');
+      const secUsers = document.getElementById('adminTabActiveUsers');
+
+      const btnOverview = document.getElementById('adminNavOverview');
+      const btnAnalytics = document.getElementById('adminNavAnalytics');
+      const btnUsers = document.getElementById('adminNavActiveUsers');
+
+      const defaultNavClass = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all";
+      const activeNavClass = "flex flex-col items-center gap-1 text-rose-400 transition-all";
+
+      secOverview.classList.add('hidden');
+      secAnalytics.classList.add('hidden');
+      secUsers.classList.add('hidden');
+
+      btnOverview.className = defaultNavClass;
+      btnAnalytics.className = defaultNavClass;
+      btnUsers.className = defaultNavClass;
+
+      if (tab === 'overview') {
+        secOverview.classList.remove('hidden');
+        btnOverview.className = activeNavClass;
+        renderAdminDashboard();
+      } else if (tab === 'analytics') {
+        secAnalytics.classList.remove('hidden');
+        btnAnalytics.className = activeNavClass;
+        renderAnalyticsView();
+      } else {
+        secUsers.classList.remove('hidden');
+        btnUsers.className = activeNavClass;
+        renderAdminOccupiedList();
+      }
+    }
+
+    // Tiện ích
+    function resetSeat(seat) {
+      seat.status = 'available';
+      seat.mssv = null;
+      seat.studentName = null;
+      seat.reservedAt = null;
+      seat.checkInAt = null;
+      seat.bookingLogId = null;
+    }
+
+    function getRemainingSeconds(reservedAt) {
+      if (!reservedAt) return 0;
+      const elapsed = Math.floor((Date.now() - reservedAt) / 1000);
+      return Math.max(0, HOLD_DURATION_SECONDS - elapsed);
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function playBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(1900, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.18);
+      } catch (e) {}
+    }
+
+    function tickTimer() {
+      let changed = false;
+      seats.forEach(s => {
+        if (s.status === 'holding') {
+          const rem = getRemainingSeconds(s.reservedAt);
+          if (rem <= 0) {
+            const log = sessionLogs.find(l => l.id === s.bookingLogId);
+            if (log) {
+              log.status = 'cancelled';
+            }
+
+            resetSeat(s);
+            changed = true;
+          }
+        }
+      });
+
+      if (changed) {
+        if (currentUserRole === 'student') renderUserFloorCards();
+        if (currentUserRole === 'admin') {
+          renderAdminDashboard();
+          if (currentAdminTab === 'analytics') renderAnalyticsView();
+        }
+      }
+
+      if (currentUserRole === 'student' && currentUserTab === 'mySeat') {
+        renderUserMySeatView();
+      }
+
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const c1 = document.getElementById('studentLiveClock');
+      const c2 = document.getElementById('adminLiveClock');
+      if (c1) c1.innerText = timeStr;
+      if (c2) c2.innerText = timeStr;
+    }
+
+    setInterval(tickTimer, 1000);
+  </script>
+</body>
+</html>
